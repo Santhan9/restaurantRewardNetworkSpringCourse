@@ -1,5 +1,8 @@
 package rewards.internal;
 
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import rewards.AccountContribution;
 import rewards.Dining;
 import rewards.RewardConfirmation;
@@ -31,6 +34,7 @@ import common.money.MonetaryAmount;
  *   injection or constructor injection.
  */
 
+@Service
 public class RewardNetworkImpl implements RewardNetwork {
 
 	private AccountRepository accountRepository;
@@ -48,6 +52,7 @@ public class RewardNetworkImpl implements RewardNetwork {
 	
 	public RewardNetworkImpl(AccountRepository accountRepository, RestaurantRepository restaurantRepository,
 			RewardRepository rewardRepository) {
+		System.out.println("second bean");
 		this.accountRepository = accountRepository;
 		this.restaurantRepository = restaurantRepository;
 		this.rewardRepository = rewardRepository;
