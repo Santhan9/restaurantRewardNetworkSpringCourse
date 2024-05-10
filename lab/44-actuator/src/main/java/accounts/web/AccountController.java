@@ -2,6 +2,7 @@ package accounts.web;
 
 import accounts.AccountManager;
 import common.money.Percentage;
+import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,8 @@ public class AccountController {
      * - Set a extra tag with "source"/"accountSummary" key/value pair
 	 */
 	@GetMapping(value = "/accounts")
+	@Timed(value="account.timer", extraTags = {"source", "accountSummary"})
+
 	public List<Account> accountSummary() {
 		return accountManager.getAllAccounts();
 	}
@@ -71,6 +74,8 @@ public class AccountController {
      *  - Set extra tag with "source"/"accountDetails" key/value pair
 	 */
 	@GetMapping(value = "/accounts/{id}")
+	@Timed(value="account.timer", extraTags = {"source", "accountDetails"})
+
 	public Account accountDetails(@PathVariable int id) {
 
 		return retrieveAccount(id);

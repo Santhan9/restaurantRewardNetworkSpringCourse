@@ -22,14 +22,14 @@ public class AccountClientTests {
 	private Random random = new Random();
 	
 	@Test
-	@Disabled
+	//@Disabled
 	public void listAccounts() {
 		// TODO-03: Run this test
 		// - Remove the @Disabled on this test method.
 		// - Then, use the restTemplate to retrieve an array containing all Account instances.
 		// - Use BASE_URL to help define the URL you need: BASE_URL + "/..."
 		// - Run the test and ensure that it passes.
-		Account[] accounts = null; // Modify this line to use the restTemplate
+		Account[] accounts = restTemplate.getForObject(BASE_URL+"/accounts",Account[].class);
 		
 		assertNotNull(accounts);
 		assertTrue(accounts.length >= 21);
@@ -39,13 +39,13 @@ public class AccountClientTests {
 	}
 	
 	@Test
-	@Disabled
+	//@Disabled
 	public void getAccount() {
 		// TODO-05: Run this test
 		// - Remove the @Disabled on this test method.
 		// - Then, use the restTemplate to retrieve the Account with id 0 using a URI template
 		// - Run the test and ensure that it passes.
-		Account account = null; // Modify this line to use the restTemplate
+		Account account = restTemplate.getForObject(BASE_URL+"/accounts/0",Account.class);
 		
 		assertNotNull(account);
 		assertEquals("Keith and Keri Donald", account.getName());
@@ -54,7 +54,7 @@ public class AccountClientTests {
 	}
 	
 	@Test
-	@Disabled
+	//@Disabled
 	public void createAccount() {
 		// Use a unique number to avoid conflicts
 		String number = String.format("12345%4d", random.nextInt(10000));
@@ -68,12 +68,12 @@ public class AccountClientTests {
 		//  - Note that 'RestTemplate' has two methods for this.
 		//  - Use the one that returns the location of the newly created
 		//    resource and assign that to a variable.
-		URI newAccountLocation = null; // Modify this line to use the restTemplate
+		URI newAccountLocation = restTemplate.postForLocation(BASE_URL+"/accounts",account); // Modify this line to use the restTemplate
 
 		//	TODO-09: Retrieve the Account you just created from
 		//	         the location that was returned.
 		//	- Run this test, then. Make sure the test succeeds.
-		Account retrievedAccount = null; // Modify this line to use the restTemplate
+		Account retrievedAccount = restTemplate.getForObject(newAccountLocation,Account.class); // Modify this line to use the restTemplate
 		
 		assertEquals(account.getNumber(), retrievedAccount.getNumber());
 		
@@ -85,7 +85,7 @@ public class AccountClientTests {
 	}
 	
 	@Test
-	@Disabled
+	//@Disabled
 	public void addAndDeleteBeneficiary() {
 		// perform both add and delete to avoid issues with side effects
 		
@@ -94,14 +94,17 @@ public class AccountClientTests {
 		// - Create a new Beneficiary called "David" for the account with id 1
 		//	 (POST the String "David" to the "/accounts/{accountId}/beneficiaries" URL).
 		// - Store the returned location URI in a variable.
-		
+		URI location = restTemplate.postForLocation(BASE_URL + "/accounts/1/beneficiaries","David");
+		System.out.println("location is "+location);
 		// TODO-14: Retrieve the Beneficiary you just created from the location that was returned
-		Beneficiary newBeneficiary = null; // Modify this line to use the restTemplate
+		Beneficiary newBeneficiary = restTemplate.getForObject(location,Beneficiary.class); // Modify this line to use the restTemplate
 		
 		assertNotNull(newBeneficiary);
 		assertEquals("David", newBeneficiary.getName());
 		
 		// TODO-15: Delete the newly created Beneficiary
+
+		restTemplate.delete(location);
 
 
 		HttpClientErrorException httpClientErrorException = assertThrows(HttpClientErrorException.class, () -> {
@@ -111,9 +114,22 @@ public class AccountClientTests {
 			// - Run this test, then. It should pass because we expect a 404 Not Found
 			//   If not, it is likely your delete in the previous step
 			//   was not successful.
+			restTemplate.getForObject(location,Beneficiary.class);
 
 		});
 		assertEquals(HttpStatus.NOT_FOUND, httpClientErrorException.getStatusCode());
+	}
+
+	@Test
+	public void createSameAccountTwiceResultsIn409() {
+		Account account = new Account("123123123", "John Doe");
+		account.addBeneficiary("Jane Doe");
+
+		HttpClientErrorException httpClientErrorException = assertThrows(HttpClientErrorException.class, () -> {
+			restTemplate.postForObject(BASE_URL +"/accounts", account, Account.class);
+			restTemplate.postForObject(BASE_URL + "/accounts", account, Account.class);
+		});
+		assertEquals(HttpStatus.CONFLICT, httpClientErrorException.getStatusCode());
 	}
 	
 }

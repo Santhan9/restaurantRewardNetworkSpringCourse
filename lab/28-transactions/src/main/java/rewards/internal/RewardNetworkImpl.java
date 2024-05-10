@@ -12,6 +12,8 @@ import rewards.internal.reward.RewardRepository;
 
 import common.money.MonetaryAmount;
 
+import javax.transaction.Transactional;
+
 /**
  * Rewards an Account for Dining at a Restaurant.
  * 
@@ -54,6 +56,7 @@ public class RewardNetworkImpl implements RewardNetwork {
 	// TODO-01: Annotate this method as needing transactional behavior
 	// Make sure to use the annotation from Spring not from Java EE.
 	
+	@Transactional
 	public RewardConfirmation rewardAccountFor(Dining dining) {
 		Account account = accountRepository.findByCreditCard(dining.getCreditCardNumber());
 		Restaurant restaurant = restaurantRepository.findByMerchantNumber(dining.getMerchantNumber());
